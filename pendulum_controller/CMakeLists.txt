@@ -41,47 +41,51 @@ target_include_directories(${PENDULUM_CONTROLLER_LIB}
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
 
-ament_target_dependencies(${PENDULUM_CONTROLLER_LIB} ${dependencies})
+target_link_libraries(${PENDULUM_CONTROLLER_LIB} ${dependencies} ${catkin_LIBRARIES})
 
 rclcpp_components_register_nodes(${PENDULUM_CONTROLLER_LIB} "pendulum::Controller")
 
 # Generate standalone node executable
 set(PENDULUM_CONTROLLER_EXE "${PENDULUM_CONTROLLER_LIB}_exe")
 add_executable(${PENDULUM_CONTROLLER_EXE} src/pendulum_controller_node_main.cpp)
-target_link_libraries(${PENDULUM_CONTROLLER_EXE} ${PENDULUM_CONTROLLER_LIB})
+target_link_libraries(${PENDULUM_CONTROLLER_EXE} ${PENDULUM_CONTROLLER_LIB} ${catkin_LIBRARIES})
 
-ament_export_targets(export_${PENDULUM_CONTROLLER_LIB} HAS_LIBRARY_TARGET)
-ament_export_dependencies(${dependencies})
+catkin_package(
+  INCLUDE_DIRS include
+  LIBRARIES ${PENDULUM_CONTROLLER_LIB}
+  CATKIN_DEPENDS roscpp lifecycle_msgs
+  DEPENDS ${dependencies}
+)
 
-if(BUILD_TESTING)
-  find_package(apex_test_tools REQUIRED)
-  find_package(ament_cmake_gtest REQUIRED)
-  find_package(ament_lint_auto REQUIRED)
-  ament_lint_auto_find_test_dependencies()
+# if(BUILD_TESTING)
+#   find_package(apex_test_tools REQUIRED)
+#   find_package(ament_cmake_gtest REQUIRED)
+#   find_package(ament_lint_auto REQUIRED)
+#   ament_lint_auto_find_test_dependencies()
 
-  apex_test_tools_add_gtest(test_pendulum_controller test/test_pendulum_controller.cpp)
-  if(TARGET test_pendulum_controller)
-    target_link_libraries(test_pendulum_controller ${PENDULUM_CONTROLLER_LIB})
-  endif()
-  apex_test_tools_add_gtest(test_pendulum_controller_node test/test_pendulum_controller_node.cpp)
-  if(TARGET test_pendulum_controller_node)
-    target_link_libraries(test_pendulum_controller_node ${PENDULUM_CONTROLLER_LIB})
-  endif()
+#   apex_test_tools_add_gtest(test_pendulum_controller test/test_pendulum_controller.cpp)
+#   if(TARGET test_pendulum_controller)
+#     target_link_libraries(test_pendulum_controller ${PENDULUM_CONTROLLER_LIB})
+#   endif()
+#   apex_test_tools_add_gtest(test_pendulum_controller_node test/test_pendulum_controller_node.cpp)
+#   if(TARGET test_pendulum_controller_node)
+#     target_link_libraries(test_pendulum_controller_node ${PENDULUM_CONTROLLER_LIB})
+#   endif()
 
-  find_package(launch_testing_ament_cmake)
-  add_launch_test(
-      test/pendulum_controller_lifecycle.test.py
-      TARGET pendulum_controller_lifecycle.test
-      ENV
-      TIMEOUT 30
-  )
-  add_launch_test(
-      test/pendulum_controller_autostart.test.py
-      TARGET pendulum_controller_autostart.test
-      ENV
-      TIMEOUT 30
-  )
-endif()
+#   find_package(launch_testing_ament_cmake)
+#   add_launch_test(
+#       test/pendulum_controller_lifecycle.test.py
+#       TARGET pendulum_controller_lifecycle.test
+#       ENV
+#       TIMEOUT 30
+#   )
+#   add_launch_test(
+#       test/pendulum_controller_autostart.test.py
+#       TARGET pendulum_controller_autostart.test
+#       ENV
+#       TIMEOUT 30
+#   )
+# endif()
 
 install(
     DIRECTORY include/

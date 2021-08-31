@@ -16,7 +16,7 @@
 #include <utility>
 #include <string>
 
-#include "rclcpp/rclcpp.hpp"
+#include "ros/ros.h"
 #include "pendulum_driver/pendulum_driver_node.hpp"
 #include "pendulum_utils/process_settings.hpp"
 #include "pendulum_utils/lifecycle_autostart.hpp"

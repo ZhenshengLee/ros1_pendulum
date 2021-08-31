@@ -23,12 +23,10 @@
 #include <vector>
 #include <random>
 
-#include "pendulum2_msgs/msg/joint_state.hpp"
-#include "pendulum2_msgs/msg/joint_command.hpp"
+#include "pendulum2_msgs/JointState.h"
+#include "pendulum2_msgs/JointCommand.hpp"
 
 #include "pendulum_driver/runge_kutta.hpp"
-#include "pendulum_driver/visibility_control.hpp"
-
 namespace pendulum
 {
 namespace pendulum_driver
@@ -37,7 +35,7 @@ namespace pendulum_driver
 ///
 ///  The simulation is based on the equations used in the
 /// <a href="https://www.youtube.com/watch?v=qjhAAQexzLg"> control bootcamp series</a>
-class PENDULUM_DRIVER_PUBLIC PendulumDriver
+class PendulumDriver
 {
 public:
   // dimension of the space state array

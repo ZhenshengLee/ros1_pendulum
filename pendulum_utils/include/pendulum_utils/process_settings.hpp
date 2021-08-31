@@ -16,7 +16,7 @@
 #define PENDULUM_UTILS__PROCESS_SETTINGS_HPP_
 
 #include <string>
-#include "rclcpp/rclcpp.hpp"
+#include "ros/ros.h"
 
 #include "rcutils/cmdline_parser.h"
 

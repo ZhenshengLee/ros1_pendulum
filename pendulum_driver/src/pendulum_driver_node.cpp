@@ -15,51 +15,52 @@
 #include <string>
 #include <memory>
 
-#include "rclcpp/strategies/message_pool_memory_strategy.hpp"
-#include "rclcpp/strategies/allocator_memory_strategy.hpp"
-
 #include "pendulum_driver/pendulum_driver_node.hpp"
 
 namespace pendulum
 {
 namespace pendulum_driver
 {
-PendulumDriverNode::PendulumDriverNode(const rclcpp::NodeOptions & options)
-: PendulumDriverNode("pendulum_driver", options)
-{}
-
 PendulumDriverNode::PendulumDriverNode(
-  const std::string & node_name,
-  const rclcpp::NodeOptions & options)
-: LifecycleNode(node_name, options),
-  state_topic_name_(declare_parameter<std::string>("state_topic_name", "pendulum_joint_states")),
-  command_topic_name_(declare_parameter<std::string>("command_topic_name", "joint_command")),
-  disturbance_topic_name_(declare_parameter<std::string>("disturbance_topic_name", "disturbance")),
-  cart_base_joint_name_(declare_parameter<std::string>("cart_base_joint_name", "cart_base_joint")),
-  pole_joint_name_(declare_parameter<std::string>("pole_joint_name", "pole_joint")),
-  state_publish_period_(std::chrono::microseconds{
-      declare_parameter<std::uint16_t>("state_publish_period_us", 1000U)}),
-  enable_topic_stats_(declare_parameter<bool>("enable_topic_stats", false)),
-  topic_stats_topic_name_{declare_parameter<std::string>("topic_stats_topic_name", "driver_stats")},
-  topic_stats_publish_period_{std::chrono::milliseconds{
-        declare_parameter<std::uint16_t>("topic_stats_publish_period_ms", 1000U)}},
-  deadline_duration_{std::chrono::milliseconds{
-        declare_parameter<std::uint16_t>("deadline_duration_ms", 0U)}},
-  driver_(
-    PendulumDriver::Config(
-      declare_parameter<double>("driver.pendulum_mass", 1.0),
-      declare_parameter<double>("driver.cart_mass", 5.0),
-      declare_parameter<double>("driver.pendulum_length", 2.0),
-      declare_parameter<double>("driver.damping_coefficient", 20.0),
-      declare_parameter<double>("driver.gravity", -9.8),
-      declare_parameter<double>("driver.max_cart_force", 1000.0),
-      declare_parameter<double>("driver.noise_level", 1.0),
-      std::chrono::microseconds {state_publish_period_}
-    )
-  ),
+  ros::NodeHandle& nh)
+: _nh(nh), ros::lifecycle::ManagedNode(nh),
   num_missed_deadlines_pub_{0U},
   num_missed_deadlines_sub_{0U}
 {
+
+  _nh.param("state_topic_name", state_topic_name_, std::string("pendulum_joint_states"));
+  _nh.param("command_topic_name", command_topic_name_, std::string("joint_command"));
+  _nh.param("disturbance_topic_name", disturbance_topic_name_, std::string("disturbance"));
+  _nh.param("cart_base_joint_name", cart_base_joint_name_, std::string("cart_base_joint"));
+  _nh.param("pole_joint_name", pole_joint_name_, std::string("pole_joint"));
+
+  std::uint16_t state_publish_period_us = 0;
+  _nh.param("state_publish_period_us", state_publish_period_us, 1000U);
+  state_publish_period_ = std::chrono::microseconds{state_publish_period_us};
+
+  _nh.param("enable_topic_stats", enable_topic_stats_, false);
+  _nh.param("topic_stats_topic_name", topic_stats_topic_name_, std::string("driver_stats"));
+
+  std::uint16_t state_publish_period_ms = 0;
+  _nh.param("topic_stats_publish_period_ms", state_publish_period_ms, 1000U);
+  topic_stats_publish_period_ = std::chrono::microseconds{state_publish_period_ms};
+
+  std::uint16_t deadline_duration_ms = 0;
+  _nh.param("deadline_duration_ms", deadline_duration_ms, 1000U);
+  deadline_duration_ = std::chrono::microseconds{deadline_duration_ms};
+
+  PendulumDriver::Config config;
+  _nh.param("driver.pendulum_mass", config.pendulum_mass,  1.0);
+  _nh.param("driver.cart_mass", config.cart_mass,  5.0);
+  _nh.param("driver.pendulum_length", config.pendulum_length,  2.0);
+  _nh.param("driver.damping_coefficient", config.damping_coefficient,  20.0);
+  _nh.param("driver.gravity", config.gravity,  -9.8);
+  _nh.param("driver.max_cart_force", config.max_cart_force,  1000.0);
+  _nh.param("driver.noise_level", config.noise_level,  1.0);
+  config.physics_update_period = std::chrono::microseconds {state_publish_period_};
+
+  driver_ = PendulumDriver(config);
+
   init_state_message();
   create_state_publisher();
   create_command_subscription();
@@ -78,12 +79,12 @@ void PendulumDriverNode::init_state_message()
 
 void PendulumDriverNode::create_state_publisher()
 {
-  rclcpp::PublisherOptions sensor_publisher_options;
-  sensor_publisher_options.event_callbacks.deadline_callback =
-    [this](rclcpp::QOSDeadlineOfferedInfo &) -> void
-    {
-      num_missed_deadlines_pub_++;
-    };
+  // rclcpp::PublisherOptions sensor_publisher_options;
+  // sensor_publisher_options.event_callbacks.deadline_callback =
+  //   [this](rclcpp::QOSDeadlineOfferedInfo &) -> void
+  //   {
+  //     num_missed_deadlines_pub_++;
+  //   };
   state_pub_ = this->create_publisher<pendulum2_msgs::msg::JointState>(
     state_topic_name_,
     rclcpp::QoS(10).deadline(deadline_duration_),
@@ -162,55 +163,47 @@ void PendulumDriverNode::log_driver_state()
   RCLCPP_INFO(get_logger(), "Subscription missed deadlines = %u", num_missed_deadlines_sub_);
 }
 
-rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-PendulumDriverNode::on_configure(const rclcpp_lifecycle::State &)
+bool
+PendulumDriverNode::on_configure()
 {
   RCLCPP_INFO(get_logger(), "Configuring");
   // reset internal state of the driver for a clean start
   driver_.reset();
-  return LifecycleNodeInterface::CallbackReturn::SUCCESS;
+  return true;
 }
 
-rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-PendulumDriverNode::on_activate(const rclcpp_lifecycle::State &)
+bool
+PendulumDriverNode::on_activate()
 {
   RCLCPP_INFO(get_logger(), "Activating");
   state_pub_->on_activate();
   state_timer_->reset();
-  return LifecycleNodeInterface::CallbackReturn::SUCCESS;
+  return true;
 }
 
-rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-PendulumDriverNode::on_deactivate(const rclcpp_lifecycle::State &)
+bool
+PendulumDriverNode::on_deactivate()
 {
   RCLCPP_INFO(get_logger(), "Deactivating");
   state_timer_->cancel();
   state_pub_->on_deactivate();
   // log the status to introspect the result
   log_driver_state();
-  return LifecycleNodeInterface::CallbackReturn::SUCCESS;
+  return true;
 }
 
-rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-PendulumDriverNode::on_cleanup(const rclcpp_lifecycle::State &)
+bool
+PendulumDriverNode::on_cleanup()
 {
   RCLCPP_INFO(get_logger(), "Cleaning up");
-  return LifecycleNodeInterface::CallbackReturn::SUCCESS;
+  return true;
 }
 
-rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-PendulumDriverNode::on_shutdown(const rclcpp_lifecycle::State &)
+bool
+PendulumDriverNode::on_shutdown()
 {
   RCLCPP_INFO(get_logger(), "Shutting down");
-  return LifecycleNodeInterface::CallbackReturn::SUCCESS;
+  return true;
 }
 }  // namespace pendulum_driver
 }  // namespace pendulum
-
-#include "rclcpp_components/register_node_macro.hpp"
-
-// Register the component with class_loader.
-// This acts as a sort of entry point,
-// allowing the component to be discoverable when its library
-// is being loaded into a running process.
-RCLCPP_COMPONENTS_REGISTER_NODE(pendulum::pendulum_driver::PendulumDriverNode)

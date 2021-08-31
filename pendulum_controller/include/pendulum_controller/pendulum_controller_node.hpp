@@ -22,7 +22,7 @@
 #include <climits>
 #include <memory>
 
-#include "rclcpp/rclcpp.hpp"
+#include "ros/ros.h"
 #include "rclcpp/publisher.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "rclcpp_lifecycle/lifecycle_publisher.hpp"
