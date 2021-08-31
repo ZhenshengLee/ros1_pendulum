@@ -3,29 +3,37 @@ project(pendulum_state_publisher)
 
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
+    set(CMAKE_CXX_STANDARD 14)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
+    add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-find_package(ament_cmake REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(sensor_msgs REQUIRED)
-find_package(pendulum2_msgs REQUIRED)
-
-add_executable(pendulum_state_publisher pendulum_state_publisher.cpp)
-ament_target_dependencies(pendulum_state_publisher rclcpp pendulum2_msgs sensor_msgs)
-
-install(TARGETS
-  pendulum_state_publisher
-  DESTINATION lib/${PROJECT_NAME}
+find_package(catkin REQUIRED
+  COMPONENTS
+  roscpp
+  sensor_msgs
+  pendulum2_msgs
 )
 
-if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  ament_lint_auto_find_test_dependencies()
-endif()
+add_executable(pendulum_state_publisher pendulum_state_publisher.cpp)
+target_link_libraries(pendulum_state_publisher rclcpp pendulum2_msgs sensor_msgs ${catkin_LIBRARIES})
 
-ament_package()
+catkin_package(
+  INCLUDE_DIRS include
+  LIBRARIES
+  CATKIN_DEPENDS roscpp pendulum2_msgs sensor_msgs
+  DEPENDS
+)
+
+install(TARGETS pendulum_state_publisher
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+# if(BUILD_TESTING)
+#   find_package(ament_lint_auto REQUIRED)
+#   ament_lint_auto_find_test_dependencies()
+# endif()

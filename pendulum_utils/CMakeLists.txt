@@ -4,19 +4,24 @@ project(pendulum_utils)
 
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
+    set(CMAKE_CXX_STANDARD 14)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
+    add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-find_package(ament_cmake REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(rclcpp_lifecycle REQUIRED)
-find_package(lifecycle_msgs REQUIRED)
+find_package(catkin REQUIRED
+  COMPONENTS
+  roscpp
+  rostest
+  rosunit
+  actionlib
+  lifecycle
+  lifecycle_msgs
+)
 
 set(PENDULUM_UTILS_LIB pendulum_utils)
 
@@ -29,31 +34,28 @@ target_include_directories(${PENDULUM_UTILS_LIB}
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 
-ament_target_dependencies(${PENDULUM_UTILS_LIB} "rclcpp")
+target_link_libraries(${PENDULUM_UTILS_LIB} ${catkin_LIBRARIES})
 
-ament_export_targets(export_${PENDULUM_UTILS_LIB} HAS_LIBRARY_TARGET)
-ament_export_dependencies(
-    "rclcpp"
-    "rclcpp_lifecycle"
-    "lifecycle_msgs"
+catkin_package(
+  INCLUDE_DIRS include
+  LIBRARIES ${PENDULUM_UTILS_LIB}
+  CATKIN_DEPENDS roscpp lifecycle_msgs
+  DEPENDS
 )
 
-if(BUILD_TESTING)
-  find_package(ament_cmake_gtest REQUIRED)
-  find_package(ament_lint_auto REQUIRED)
-  ament_lint_auto_find_test_dependencies()
-endif()
+# if(BUILD_TESTING)
+#   find_package(ament_cmake_gtest REQUIRED)
+#   find_package(ament_lint_auto REQUIRED)
+#   ament_lint_auto_find_test_dependencies()
+# endif()
 
 install(
-  DIRECTORY include/
-  DESTINATION include
+  DIRECTORY include/${PROJECT_NAME}
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
 
 install(TARGETS ${PENDULUM_UTILS_LIB}
-    EXPORT export_${PENDULUM_UTILS_LIB}
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-    RUNTIME DESTINATION lib/${PROJECT_NAME}
-    INCLUDES DESTINATION include)
-
-ament_package()
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)

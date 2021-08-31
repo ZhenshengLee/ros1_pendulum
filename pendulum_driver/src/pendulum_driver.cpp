@@ -14,7 +14,7 @@
 
 #include "pendulum_driver/pendulum_driver.hpp"
 #include <vector>
-#include "rcppmath/clamp.hpp"
+#include "pendulum_driver/clamp.hpp"
 
 namespace pendulum
 {

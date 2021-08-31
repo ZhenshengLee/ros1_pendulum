@@ -1,27 +1,24 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="2">
-  <name>pendulum_state_publisher</name>
-  <version>0.0.1</version>
-  <description>Re-publish pendulum2_msgs JoinStates to sensor_msgs JoinStates</description>
-  <maintainer email="carlos.svic@gmail.com">Carlos San Vicente</maintainer>
-  <license>Apache License 2.0</license>
-  <author>Carlos San Vicente</author>
+    <name>pendulum_state_publisher</name>
+    <version>0.0.1</version>
+    <description>
+      pendulum_state_publisher
+    </description>
+    <maintainer email="lzs_1993@qq.com">ZhenshengLi</maintainer>
+    <license>Commercial</license>
+    <url>http://ZhenshengLi</url>
 
-  <buildtool_depend>ament_cmake</buildtool_depend>
+    <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>rclcpp</build_depend>
-  <build_depend>pendulum2_msgs</build_depend>
-  <build_depend>sensor_msgs</build_depend>
+    <build_depend>roscpp</build_depend>
+    <build_depend>rospy</build_depend>
+    <build_depend>pendulum2_msgs</build_depend>
+    <build_depend>sensor_msgs</build_depend>
 
-  <exec_depend>rclcpp</exec_depend>
-  <exec_depend>pendulum2_msgs</exec_depend>
-  <exec_depend>sensor_msgs</exec_depend>
-
-  <test_depend>ament_lint_auto</test_depend>
-  <test_depend>ament_lint_common</test_depend>
-
-  <export>
-    <build_type>ament_cmake</build_type>
-  </export>
+    <run_depend>roscpp</run_depend>
+    <run_depend>rospy</run_depend>
+    <run_depend>pendulum2_msgs</run_depend>
+    <run_depend>sensor_msgs</run_depend>
 </package>

@@ -1,13 +1,13 @@
-name: build
-on: [push, pull_request]
-jobs:
-  build:
-    runs-on: ubuntu-18.04
-    steps:
-    - uses: actions/checkout@v1
-    - name: Build/Tests
-      run: |
-        docker build -t ci-pendulum .
+# name: build
+# on: [push, pull_request]
+# jobs:
+#   build:
+#     runs-on: ubuntu-18.04
+#     steps:
+#     - uses: actions/checkout@v1
+#     - name: Build/Tests
+#       run: |
+#         docker build -t ci-pendulum .
 
   # deployment:
   #   name: Deployment

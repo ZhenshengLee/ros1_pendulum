@@ -14,16 +14,16 @@
 
 #include <memory>
 
-#include "rclcpp/rclcpp.hpp"
-#include "sensor_msgs/msg/joint_state.hpp"
-#include "pendulum2_msgs/msg/joint_state.hpp"
+#include <ros/ros.h>
+#include "sensor_msgs/JointState.h"
+#include "pendulum2_msgs/JointState.h"
 
 
-class PendulumStatePublisher : public rclcpp::Node
+class PendulumStatePublisher
 {
 public:
-  PendulumStatePublisher()
-  : Node("pendulum_state_publisher")
+  PendulumStatePublisher(ros::NodeHandle nh)
+  : nh_(nh)
   {
     state_message_.name.push_back("cart_base_joint");
     state_message_.position.push_back(0.0);
@@ -34,32 +34,35 @@ public:
     state_message_.velocity.push_back(0.0);
     state_message_.effort.push_back(0.0);
 
-    publisher_ = this->create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
+    publisher_ = nh_.advertise<sensor_msgs::JointState>("joint_states", 10);
 
-    subscription_ = this->create_subscription<pendulum2_msgs::msg::JointState>(
+    subscription_ = nh_.subscribe(
       "pendulum_joint_states",
       10,
-      [this](pendulum2_msgs::msg::JointState::UniquePtr msg) {
+      [this](pendulum2_msgs::JointState::UniquePtr msg) {
         state_message_.position[0] = msg->cart_position;
         state_message_.velocity[0] = msg->cart_velocity;
         state_message_.effort[0] = msg->cart_force;
         state_message_.position[1] = msg->pole_angle;
         state_message_.velocity[1] = msg->pole_velocity;
-        state_message_.header.stamp = this->get_clock()->now();
+        state_message_.header.stamp = ros::Time::now();
         this->publisher_->publish(state_message_);
       });
   }
 
+  ros::NodeHandle nh_;
+
 private:
-  sensor_msgs::msg::JointState state_message_;
-  rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr publisher_;
-  rclcpp::Subscription<pendulum2_msgs::msg::JointState>::SharedPtr subscription_;
+  sensor_msgs::JointState state_message_;
+  ros::Publisher publisher_;
+  ros::Subscriber subscription_;
 };
 
 int main(int argc, char * argv[])
 {
-  rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<PendulumStatePublisher>());
-  rclcpp::shutdown();
+  ros::init(argc, argv, "PendulumStatePublisher");
+  ros::NodeHandle node;
+  PendulumStatePublisher publiser(node);
+  ros::spin();
   return 0;
 }
