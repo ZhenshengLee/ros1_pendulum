@@ -14,11 +14,11 @@
 
     <build_depend>roscpp</build_depend>
     <build_depend>rospy</build_depend>
-    <build_depend>lifecycle</build_depend>
-    <build_depend>lifecycle_msgs</build_depend>
+    <!-- <build_depend>lifecycle</build_depend> -->
+    <!-- <build_depend>lifecycle_msgs</build_depend> -->
 
     <exec_depend>roscpp</exec_depend>
     <exec_depend>rospy</exec_depend>
-    <exec_depend>lifecycle</exec_depend>
-    <exec_depend>lifecycle_msgs</exec_depend>
+    <!-- <exec_depend>lifecycle</exec_depend> -->
+    <!-- <exec_depend>lifecycle_msgs</exec_depend> -->
 </package>

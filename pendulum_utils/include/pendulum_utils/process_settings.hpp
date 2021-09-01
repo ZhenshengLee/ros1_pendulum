@@ -18,7 +18,7 @@
 #include <string>
 #include "ros/ros.h"
 
-#include "rcutils/cmdline_parser.h"
+#include "pendulum_utils/cmdline_parser.hpp"
 
 #include "pendulum_utils/memory_lock.hpp"
 #include "pendulum_utils/rt_thread.hpp"
@@ -31,8 +31,7 @@ struct ProcessSettings
 {
   void print_usage()
   {
-    RCLCPP_INFO(
-      rclcpp::get_logger("process_settings"),
+    ROS_INFO(
       "\t[%s auto start nodes]\n"
       "\t[%s lock memory]\n"
       "\t[%s lock a fixed memory size in MB]\n"

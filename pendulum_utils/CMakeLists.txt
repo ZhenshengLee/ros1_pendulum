@@ -19,8 +19,8 @@ find_package(catkin REQUIRED
   rostest
   rosunit
   actionlib
-  lifecycle
-  lifecycle_msgs
+  # lifecycle
+  # lifecycle_msgs
 )
 
 set(PENDULUM_UTILS_LIB pendulum_utils)
@@ -39,7 +39,7 @@ target_link_libraries(${PENDULUM_UTILS_LIB} ${catkin_LIBRARIES})
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PENDULUM_UTILS_LIB}
-  CATKIN_DEPENDS roscpp lifecycle_msgs
+  # CATKIN_DEPENDS roscpp lifecycle_msgs
   DEPENDS
 )
 
